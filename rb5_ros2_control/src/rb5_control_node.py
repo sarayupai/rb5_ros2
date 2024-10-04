@@ -12,7 +12,7 @@ class MegaPiControllerNode(Node):
         super().__init__('megapi_controller_node')
         self.mpi_ctrl = MegaPiController(port='/dev/ttyUSB0', verbose=verbose)
 
-
+    # This is a ROS2 Foxy template for MegaPi controller
 
 
 
