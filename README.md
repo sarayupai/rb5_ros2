@@ -1,7 +1,6 @@
 # Rb5 related packages in ROS2
 
-These packages and developed using ROS dashing on Ubuntu 18.04.
-For ROS2 foxy or others, see notes below.
+These packages and developed using ROS Foxy on Ubuntu 20.04.
 
 ## 1. rb5_ros2_vision
 
