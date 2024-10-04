@@ -1,6 +1,6 @@
 # Rb5 related packages in ROS2
 
-These packages and developed using ROS Foxy on Ubuntu 20.04.
+These packages are developed using ROS Foxy on Ubuntu 20.04.
 
 ## 1. rb5_ros2_vision
 
