@@ -33,7 +33,9 @@ find_package(rclpy REQUIRED)
 ament_python_install_package(${PROJECT_NAME})
 
 install(PROGRAMS
-  src/rb5_control_node.py
+  rb5_ros2_control/mpi_control.py
+  rb5_ros2_control/rb5_control_node.py
+  rb5_ros2_control/rb5_keyjoy_control_node.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
