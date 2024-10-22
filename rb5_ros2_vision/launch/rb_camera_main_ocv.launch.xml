@@ -8,7 +8,8 @@
   <arg name="input_format" default="NV12" /> <!-- format for the input stream from camera -->
   <arg name="output_format" default="RGB" /> <!-- format for the output stream -->
   <arg name="topic_name_prefix" default="camera" />
-  <arg name="image_compress" default="true" /> 
+  <arg name="image_compress" default="true" />
+  <arg name="image_rectify" default="true" />
 
   <node pkg="rb5_ros2_vision" exec="rb_camera_ocv_node" name="rb_camera_ocv_node" output="screen">
     <param name="camera_id" value="$(var camera_id)" />
@@ -19,5 +20,6 @@
     <param name="output_format" value="$(var output_format)" />
     <param name="topic_name" value="$(var topic_name_prefix)_$(var camera_id)" />
     <param name="image_compress" value="$(var image_compress)" />
+    <param name="image_rectify" value="$(var image_rectify)" />
   </node>
 </launch>

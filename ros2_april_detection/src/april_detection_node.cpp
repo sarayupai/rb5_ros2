@@ -13,18 +13,18 @@
 
 using std::placeholders::_1;
 // camera parameters
-double distortion_coeff[5] = {0.022327, 
-                            -0.019742, 
-                            -0.000961, 
-                            0.000625, 
-                            0.000000};
+// double distortion_coeff[5] = {0.022327, 
+//                             -0.019742, 
+//                             -0.000961, 
+//                             0.000625, 
+//                             0.000000};
 
-double intrinsics[9] = {691.01615,    0.     ,  954.51,
-                      0.     ,  690.10114,  540.77467,
-                      0.     ,    0.     ,    1.};
+// double intrinsics[9] = {691.01615,    0.     ,  954.51,
+//                       0.     ,  690.10114,  540.77467,
+//                       0.     ,    0.     ,    1.};
 
-const cv::Mat d(cv::Size(1, 5), CV_64FC1, distortion_coeff);
-const cv::Mat K(cv::Size(3, 3), CV_64FC1, intrinsics);
+// const cv::Mat d(cv::Size(1, 5), CV_64FC1, distortion_coeff);
+// const cv::Mat K(cv::Size(3, 3), CV_64FC1, intrinsics);
 
 
 
@@ -40,18 +40,7 @@ class AprilDetectionNode : public rclcpp::Node{
 
       tf_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
 
-    }
-
-    // undistort raw image data
-    cv::Mat rectify(const cv::Mat image) const {
-      cv::Mat image_rect = image.clone();
-      const cv::Mat new_K = cv::getOptimalNewCameraMatrix(K, d, image.size(), 1.0); 
-      cv::undistort(image, image_rect, K, d, new_K); 
-
-      return image_rect;
-
-    }
-    
+    }    
 
   private:
 
@@ -136,8 +125,8 @@ class AprilDetectionNode : public rclcpp::Node{
       
       cv_bridge::CvImagePtr img_cv = cv_bridge::toCvCopy(msg);
 
-      // rectify and run detection (pair<vector<apriltag_pose_t>, cv::Mat>)
-      auto april_obj =  det.processImage(rectify(img_cv->image));
+      // run detection (pair<vector<apriltag_pose_t>, cv::Mat>)
+      auto april_obj =  det.processImage(img_cv->image);
 
       // TODO: return geometry_msgs::PoseStamped
       publishTransforms(get<0>(april_obj), get<1>(april_obj));

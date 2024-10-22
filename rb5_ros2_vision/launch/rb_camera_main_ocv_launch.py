@@ -39,10 +39,10 @@ def generate_launch_description():
         "topic_name", default_value=['camera_', LaunchConfiguration('camera_id')]
     )
     image_compress = DeclareLaunchArgument(
-        "image_compress", default_value=TextSubstitution(text="false")
+        "image_compress", default_value=TextSubstitution(text="true")
     )
     image_rectify = DeclareLaunchArgument(
-        "image_rectify", default_value=TextSubstitution(text="false")
+        "image_rectify", default_value=TextSubstitution(text="true")
     )
     camera_parameter_path = DeclareLaunchArgument(
         "camera_parameter_path", default_value=TextSubstitution(text="/root/dev/ros2ws/src/rb5_ros2/rb5_ros2_vision/config/camera_main.yaml")
