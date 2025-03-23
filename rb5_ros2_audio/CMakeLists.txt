@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(rb5_ros2_control)
+project(rb5_ros2_audio)
 
 # Default to C99
 if(NOT CMAKE_C_STANDARD)
@@ -18,26 +18,17 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(ament_cmake_python REQUIRED)
-find_package(rclcpp REQUIRED)
+# uncomment the following section in order to fill in
+# further dependencies manually.
+# find_package(<dependency> REQUIRED)
 find_package(rclpy REQUIRED)
 
-include_directories(include)
-add_executable(${PROJECT_NAME}_node src/rb5_control_node.cpp)
-ament_target_dependencies(${PROJECT_NAME}_node rclcpp)
-
-install(TARGETS
-  ${PROJECT_NAME}_node
-  DESTINATION lib/${PROJECT_NAME}
-)
-
-ament_python_install_package(${PROJECT_NAME})
-
+# Install Python executables
 install(PROGRAMS
-  scripts/rb5_mpi_control.py
-  scripts/joy_node.py
+  src/audio_node.py
+  src/audio_output_node.py
   DESTINATION lib/${PROJECT_NAME}
 )
-
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)

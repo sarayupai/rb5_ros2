@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
 project(orb_slam3_rb5_ros2)
 
-set(ORB_SLAM3_SOURCE_DIR "/path/to/ORB_SLAM3_RB5_LIB/")
+set(ORB_SLAM3_SOURCE_DIR "/root/ORB_SLAM3_RB5") 
 
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
@@ -44,12 +44,13 @@ endif()
 
 LIST(APPEND CMAKE_MODULE_PATH ${ORB_SLAM3_SOURCE_DIR}/cmake_modules)
 
-find_package(OpenCV 3.2 QUIET)
+find_package(OpenCV 4.2 QUIET)
 if(NOT OpenCV_FOUND)
 	message(FATAL_ERROR "OpenCV > 4.4 not found.")
 endif()
 
 find_package(Eigen3 3.1.0 REQUIRED)
+set(Pangolin_DIR "/root/Pangolin/build")
 find_package(Pangolin REQUIRED)
 
 include_directories(
