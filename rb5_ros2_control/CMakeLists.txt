@@ -35,6 +35,7 @@ ament_python_install_package(${PROJECT_NAME})
 install(PROGRAMS
   scripts/rb5_mpi_control.py
   scripts/joy_node.py
+  scripts/main_node.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

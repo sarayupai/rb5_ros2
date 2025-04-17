@@ -9,7 +9,7 @@ class AudioOutputNode(Node):
     def __init__(self):
         super().__init__('audio_module')
         self.speaker = pyttsx3.init()
-        self.subscription = self.create_subscription(String, 'speech_text', self.speak_text, 10)
+        self.subscription = self.create_subscription(String, 'speaker_text', self.speak_text, 10)
         self.get_logger().info("Text-to-Speech Node Initialized")
         
     # callback function 

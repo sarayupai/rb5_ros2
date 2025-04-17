@@ -10,26 +10,36 @@ import wave
 class AudioNode(Node):
     def __init__(self):
         super().__init__('audio_module')
-        self.publisher = self.create_publisher(String, 'speech_text', 10)
+        self.publisher = self.create_publisher(String, '/transcribed_speech', 10)
+        self.subscription = self.create_subscription(String, '/state', self.update_state, 10)
         self.model = whisper.load_model("base")
         print("Model loaded")
         self.timer = self.create_timer(5.0, self.record_and_transcribe)
+        self.recording_enabled = False 
+
+    def update_state(self, msg):
+        if msg.data == 'record':
+            self.recording_enabled = True
+        else:
+            self.recording_enabled = False 
+        self.get_logger().info(f"[RECORD STATE]: {self.recording_enabled}")
         
-
+    # Record mic audio, transcribe using Whisper, and publish text every 5 secs if recording is enabled 
     def record_and_transcribe(self):
-        # Capture audio from the microphone
-        audio_file = self.capture_audio()
+        if self.recording_enabled:
+            # Capture audio from the microphone
+            audio_file = self.capture_audio()
 
-        # Transcribe audio using Whisper
-        text = self.transcribe_audio(audio_file)
+            # Transcribe audio using Whisper
+            text = self.transcribe_audio(audio_file)
 
-        # Publish the recognized text to a topic
-        msg = String()
-        msg.data = text
-        self.publisher.publish(msg)
+            # Publish the recognized text to a topic
+            msg = String()
+            msg.data = text
+            self.publisher.publish(msg)
 
+    # Capture mic audio using pyaudio 
     def capture_audio(self):
-        # Capture audio using pyaudio (from above example)
         p = pyaudio.PyAudio()
         stream = p.open(format=pyaudio.paInt16, channels=1, rate=16000, input=True, frames_per_buffer=1024)
         frames = []
@@ -52,8 +62,8 @@ class AudioNode(Node):
             wf.writeframes(b''.join(frames))
         return "temp_audio.wav"
 
+    # Transcribe audio using Whisper
     def transcribe_audio(self, audio_file):
-        # Transcribe audio using Whisper
         print("Transcribing ...")
         result = self.model.transcribe(audio_file)
         print(result["text"])
@@ -64,7 +74,6 @@ def main(args=None):
     rclpy.init(args=args)
     node = AudioNode()
     rclpy.spin(node)
-    node.destroy_node()
     rclpy.shutdown()
 
 if __name__ == '__main__':
