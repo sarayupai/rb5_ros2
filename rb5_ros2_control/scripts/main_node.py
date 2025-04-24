@@ -19,16 +19,17 @@ class Main(Node):
         self.create_subscription(String, '/transcribed_speech', self.speech_callback, 10)  
 
         # Publishers
-        self.state_publisher(String, '/state', 10)
+        self.state_publisher = self.create_publisher(String, '/state', 10)
         self.speech_publisher = self.create_publisher(String, '/speaker_text', 10)        
 
         # Initialize state 
-        self.publish_state('record') # 2 options: record, navigate 
+        self.state = 'record' # 2 options: record, navigate 
+        self.publish_state() 
 
-    def publish_state(self, state):
+    def publish_state(self):
         msg = String()
-        msg.data = state
-        self.get_logger().info(f"[MAIN STATE]: {state}")
+        msg.data = self.state
+        self.get_logger().info(f"[MAIN STATE]: {self.state}")
         self.state_publisher.publish(msg)
 
     def publish_speech(self, message):
@@ -38,15 +39,29 @@ class Main(Node):
         self.speech_publisher.publish(msg)
 
     def speech_callback(self, msg):
-        words = msg.data.lower().strip().split()               # TODO: decide how to process input 
-        for word in words: 
-            if word in self.location_map:                      # TODO: how to handle multiple valid words 
-                goal = self.location_map[word]
-                self.publish_speech(f"Heading to the {word}")
-                self.publish_state('navigate')                 # Update state 
-                return 
+        # Process transcribed speech only if system is in record state 
+        if self.state == 'record':
+            words = msg.data.lower().strip().split()               # TODO: decide how to process input (how to handle multiple valid words, etc.)
+            for word in words: 
+                # if valid location
+                if word in self.location_map:
+                    
+                    # Update state 
+                    self.state = 'navigate'    
+                    self.publish_state() 
+
+                    # Set goal          
+                    goal = self.location_map[word]
+
+                    self.get_logger().info(f"Going to {word} at {goal}") 
+                    self.publish_speech(f"Heading to the {word}")
+
+                    # TODO: launch navigation 
+                    return 
         
-        self.publish_speech(f"Unknown locations: {words}")
+            self.publish_speech(f"Unknown locations: {words}")
+        else: 
+            self.get_logger().info("Ignoring transcribed speech")
 
     
 
@@ -55,5 +70,8 @@ def main(args=None):
     node = Main()
     rclpy.spin(node)
     rclpy.shutdown()
+
+if __name__ == '__main__':
+    main()
 
 

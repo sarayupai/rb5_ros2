@@ -13,7 +13,7 @@ class AudioNode(Node):
         self.publisher = self.create_publisher(String, '/transcribed_speech', 10)
         self.subscription = self.create_subscription(String, '/state', self.update_state, 10)
         self.model = whisper.load_model("base")
-        print("Model loaded")
+        self.get_logger().info(f"Model loaded")
         self.timer = self.create_timer(5.0, self.record_and_transcribe)
         self.recording_enabled = False 
 
@@ -33,10 +33,12 @@ class AudioNode(Node):
             # Transcribe audio using Whisper
             text = self.transcribe_audio(audio_file)
 
-            # Publish the recognized text to a topic
-            msg = String()
-            msg.data = text
-            self.publisher.publish(msg)
+            # in case state changed during audio or recording 
+            if self.recording_enabled:
+                # Publish the recognized text to a topic
+                msg = String()
+                msg.data = text
+                self.publisher.publish(msg)
 
     # Capture mic audio using pyaudio 
     def capture_audio(self):
