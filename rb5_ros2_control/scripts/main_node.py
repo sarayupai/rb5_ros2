@@ -41,7 +41,6 @@ class Main(Node):
             self.get_logger().info('service not available, waiting again...')
         self.req = NavigatePath.Request()   
 
-
         # Initialize state 
         self.state = 'record' # 2 options: record, navigate 
         self.pose = (0, 0)
@@ -100,9 +99,13 @@ class Main(Node):
 
     def send_request(self, waypoints):
         self.req.waypoints = waypoints
-        self.future = self.cli.call_async(self.req)
-        rclpy.spin_until_future_complete(self, self.future)
-        return self.future.result()
+        future = self.cli.call_async(self.req)
+        rclpy.spin_until_future_complete(self, future)
+        if future.result() is not None:
+            print("Service call successful:", future.result().success)
+        else:
+            print("Service call failed.")
+        return future.result()
    
 def main(args=None):
     rclpy.init(args=args)
