@@ -5,9 +5,7 @@ from rclpy.node import Node
 from std_msgs.msg import String
 from geometry_msgs.msg import PoseStamped
 from rb5_ros2_control.scripts.path_planner import PathPlanner
-from rb5_ros2_control.srv.path_planne import PathPlanner
-from example_interfaces.srv import AddTwoInts
-
+from rb5_ros2_control.srv import NavigatePath
 
 class Main(Node):
     def __init__(self):
@@ -38,10 +36,10 @@ class Main(Node):
         self.speech_publisher = self.create_publisher(String, '/speaker_text', 10)     
 
         # Client 
-        self.cli = self.create_client(NavigatePath, 'add_two_ints')
+        self.cli = self.create_client(NavigatePath, 'navigate_path')
         while not self.cli.wait_for_service(timeout_sec=1.0):
             self.get_logger().info('service not available, waiting again...')
-        self.req = AddTwoInts.Request()   
+        self.req = NavigatePath.Request()   
 
 
         # Initialize state 
@@ -49,7 +47,6 @@ class Main(Node):
         self.pose = (0, 0)
         self.publish_state() 
         
-
     def publish_state(self):
         msg = String()
         msg.data = self.state
@@ -83,18 +80,18 @@ class Main(Node):
                     goal = self.location_map[word]
                     
                     # Plan path 
-                    self.planner.get_path(goal, self.pose) 
+                    path = self.planner.get_path(goal, self.pose) 
 
                     # TODO: launch navigation 
                     self.get_logger().info(f"Going to {word} at {goal}") 
                     self.publish_speech(f"Heading to the {word}")
 
-                    # Idea: use service to spin up navigation once 
-                    response = self.send_request(int(sys.argv[1]), int(sys.argv[2]))
-                    minimal_client.get_logger().info('Result of add_two_ints: for %d + %d = %d' %(int(sys.argv[1]), int(sys.argv[2]), response.sum))
+                    # Use service to spin up navigation  
+                    response = self.send_request(path)
+                    self.get_logger().info("Reached destination")
                     
                     # Update state 
-                    self.state = 'navigate'    
+                    self.state = 'record'    
                     self.publish_state()   
         
             self.publish_speech(f"Unknown locations: {words}")
@@ -102,8 +99,7 @@ class Main(Node):
             self.get_logger().info("Ignoring transcribed speech")
 
     def send_request(self, waypoints):
-        self.req.a = a
-        self.req.b = b
+        self.req.waypoints = waypoints
         self.future = self.cli.call_async(self.req)
         rclpy.spin_until_future_complete(self, self.future)
         return self.future.result()
