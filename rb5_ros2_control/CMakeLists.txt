@@ -21,6 +21,12 @@ find_package(ament_cmake_python REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclpy REQUIRED)
 
+find_package(rosidl_default_generators REQUIRED)
+
+rosidl_generate_interfaces(${PROJECT_NAME}
+  "srv/NavigatePath.srv"
+)
+
 include_directories(include)
 add_executable(${PROJECT_NAME}_node src/rb5_control_node.cpp)
 ament_target_dependencies(${PROJECT_NAME}_node rclcpp)
@@ -39,6 +45,7 @@ install(PROGRAMS
   scripts/pid_executor.py
   scripts/path_planner.py
   scripts/mpi_twist_control_node.py
+  scripts/nav_client.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
@@ -53,5 +60,7 @@ if(BUILD_TESTING)
   #set(ament_cmake_cpplint_FOUND TRUE)
   ament_lint_auto_find_test_dependencies()
 endif()
+
+ament_export_dependencies(rosidl_default_runtime)
 
 ament_package()
