@@ -54,10 +54,12 @@ class PathPlanner():
             # Found the goal
             if current == goal:
                 # Reconstruct path 
-                path = [self.map[current]["pos"]]
+                path = [self.map[current]["pos"][0], self.map[current]["pos"][1], 0]
                 while current in came_from:
                     current = came_from[current]
-                    path.append(self.map[current]["pos"])
+                    path.append(self.map[current]["pos"][0])
+                    path.append(self.map[current]["pos"][1])
+                    path.append(0)
                 return path[::-1] # Return reversed path
             
             for neighbor in self.map[current]["neighbors"]:

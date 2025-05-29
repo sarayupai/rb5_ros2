@@ -86,7 +86,7 @@ class RobotStateEstimator(Node):
         self.current_state = np.array([0.0, 0.0, 0.0]) # TODO: update start pose 
         self.pose_updated = True
 
-    def slam_pose_callback(self, msg):
+    def pose_callback(self, msg):
         self.pose_updated = False
         #self.get_logger().info(f"Received SLAM Pose")
         self.current_state = self.pose_to_2d(msg)
@@ -141,22 +141,26 @@ class NavigationService(Node):
         self.pid = PIDcontroller(0.1, 0.005, 0.005)
 
     def navigate_callback(self, request, response):
-        self.get_logger().info('Incoming request:\n', (request.waypoints))
+        #self.get_logger().info('Incoming request:\n' (request.waypoints))
+        waypoints = np.array([tuple(request.waypoints[i:i+3]) for i in range (0, len(request.waypoints), 3)])
 
-        # Safest path TODO update 
-        waypoints = np.array([
-            (2.0, 3.0, 1.5707963267948966),
-            (1.5, 3.5, 2.356194490192345),
-            (1.5, 4.5, 1.5707963267948966),
-            (2.0, 5.0, 0.7853981633974483),
-            (2.0, 5.5, 1.5707963267948966),
-            (2.5, 6.0, 0.7853981633974483),
-            (3.0, 6.0, 0.0),
-            (4.0, 6.0, 0.0),
-            (6.0, 6.0, 0.0)
-        ])
-        waypoints_to_meters(waypoints)
+        # Path TODO update 
+        #waypoints = np.array([
+        #    (2.0, 3.0, 1.5707963267948966),
+        #    (1.5, 3.5, 2.356194490192345),
+        #    (1.5, 4.5, 1.5707963267948966),
+        #    (2.0, 5.0, 0.7853981633974483),
+        #    (2.0, 5.5, 1.5707963267948966),
+        #    (2.5, 6.0, 0.7853981633974483),
+        #    (3.0, 6.0, 0.0),
+        #    (4.0, 6.0, 0.0),
+        #    (6.0, 6.0, 0.0)
+        #])
+        #waypoints_to_meters(waypoints)
         print(waypoints)
+        self.get_logger().info(f"Received {len(waypoints)} waypoints:")
+        for wp in waypoints:
+            self.get_logger().info(f"x: {wp[0]}, y: {wp[1]}, theta: {wp[2]}")
    
         # init pid controller
         current_state = self.robot_state_estimator.current_state
@@ -169,11 +173,12 @@ class NavigationService(Node):
             self.pid.setTarget(wp)
 
             # calculate the current twist
-            update_value = pid.update(current_state)
+            update_value = self.pid.update(current_state)
             # publish the twist
             self.pid.publisher_.publish(genTwistMsg(coord(update_value, current_state)))
             #print(coord(update_value, current_state))
             time.sleep(0.05)
+            print('here')
 
             # update the current state
             current_state += update_value
@@ -181,6 +186,7 @@ class NavigationService(Node):
             found_state, estimated_state = self.robot_state_estimator.pose_updated, self.robot_state_estimator.current_state
             if found_state: # if the tag is detected, we can use it to update current state.
                 current_state = estimated_state
+            print('here_b')
 
             # state_feet = state_to_feet_list(current_state)
             trajectory.append(current_state)
@@ -189,7 +195,7 @@ class NavigationService(Node):
             print()
 
             # check the error between current state and current way point
-            while(np.linalg.norm(self.pid.getError(current_state, wp)) > 0.16): # scaled up from 0.05
+            while(np.linalg.norm(self.pid.getError(current_state, wp)) > 0.05): # scaled up from 0.05
                 # calculate the current twist
                 update_value = self.pid.update(current_state)
                 # publish the twist
@@ -208,6 +214,7 @@ class NavigationService(Node):
                 trajectory.append(current_state)
                 print("waypoint:", wp)
                 print('current_state:', current_state)
+                print('here')
                 print()
 
         # stop the car and exit
@@ -219,6 +226,7 @@ class NavigationService(Node):
             wr.writerows(trajectory)
 
         self.robot_state_estimator.destroy_node()
+        response.success = True
         return response 
 
 def main(args=None):

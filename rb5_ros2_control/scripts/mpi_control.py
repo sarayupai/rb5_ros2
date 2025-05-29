@@ -23,7 +23,7 @@ class MegaPiController(Node):
         time.sleep(1)
 
         self.verbose = verbose
-        if verbose:
+        if self.verbose:
             self.printConfiguration()
 
         self.joy_sub = self.create_subscription(
@@ -40,7 +40,7 @@ class MegaPiController(Node):
 
     def printConfiguration(self):
         print('MegaPiController:')
-        print("Communication Port:" + repr(self.port))
+        print("Communication Port:" + repr('/dev/ttyUSB0'))#(self.port))
         print("Motor ports:" +
               " MFR: " + repr(MFR) +
               " MBL: " + repr(MBL) +
