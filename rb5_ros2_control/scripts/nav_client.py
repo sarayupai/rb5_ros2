@@ -18,8 +18,7 @@ class TestClient(Node):
 
     def send_waypoints(self):
         # Test waypoints 
-        waypoints = [0.1, 0.0, 0.0,
-        0.1, 0.05, 0.0]
+        waypoints = [0.0, 0.0, 0.0, 0.03, 0.0, 0.0, 0.06, 0.0, 0.0] 
 
         self.req.waypoints = waypoints
 

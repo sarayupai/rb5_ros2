@@ -4,25 +4,30 @@ import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
 from geometry_msgs.msg import PoseStamped
-from rb5_ros2_control.scripts.path_planner import PathPlanner
+from path_planner import PathPlanner
 from rb5_ros2_control.srv import NavigatePath
+import string
 
 class Main(Node):
     def __init__(self):
         super().__init__('voice_activated_guide')
 
-        # Map of words to goal poses (TODO: update based on SLAM)
+        # Map of words to goal poses 
         self.location_map = {
-            'kitchen': (1.0, 2.0, 0.0),
-            'lab': (3.5, -1.0, 1.57)
+            'kitchen': "C"
         }
 
-        # Define your graph nodes here TODO update based on SLAM 
+        # Define your graph nodes here  
         GRAPH_NODES = {
-            "A": {"pos": (0, 0), "neighbors": ["B"]},
-            "B": {"pos": (2, 0), "neighbors": ["A", "C"]},
-            "C": {"pos": (4, 0), "neighbors": ["B", "D"]},
-            "D": {"pos": (6, 0), "neighbors": ["C"]},
+            "A": {"pos": (0.0, 0.0), "neighbors": ["B", "D"]},
+            "B": {"pos": (0.0, 0.01), "neighbors": ["A", "C"]},
+            "C": {"pos": (0.0, 0.02), "neighbors": ["B", "F"]},
+            "D": {"pos": (0.03, 0.0), "neighbors": ["A", "G"]},
+            #"E": {"pos": (0.03, 0.01), "neighbors": ["C"]},
+            "F": {"pos": (0.03, 0.02), "neighbors": ["C", "I"]},
+            "G": {"pos": (0.06, 0.0), "neighbors": ["D", "H"]},
+            "H": {"pos": (0.06, 0.01), "neighbors": ["G", "I"]},
+            "I": {"pos": (0.06, 0.02), "neighbors": ["F", "H"]},
         }
 
         self.planner = PathPlanner(GRAPH_NODES)
@@ -43,7 +48,7 @@ class Main(Node):
 
         # Initialize state 
         self.state = 'record' # 2 options: record, navigate 
-        self.pose = (0, 0)
+        self.pose = (0.0, 0.0)
         self.publish_state() 
         
     def publish_state(self):
@@ -68,6 +73,7 @@ class Main(Node):
         if self.state == 'record':
             words = msg.data.lower().strip().split()               # TODO: decide how to process input (how to handle multiple valid words, etc.)
             for word in words: 
+                word = word.strip(string.punctuation)
                 # if valid location
                 if word in self.location_map:
                     
@@ -86,7 +92,7 @@ class Main(Node):
                     self.publish_speech(f"Heading to the {word}")
 
                     # Use service to spin up navigation  
-                    response = self.send_request(path)
+                    response = self.send_waypoints(path)
                     self.get_logger().info("Reached destination")
                     
                     # Update state 
@@ -97,15 +103,20 @@ class Main(Node):
         else: 
             self.get_logger().info("Ignoring transcribed speech")
 
-    def send_request(self, waypoints):
+    def send_waypoints(self, waypoints):
+        # Test waypoints 
+        # waypoints = [0.0, 0.0, 0.0, 0.03, 0.0, 0.0, 0.06, 0.0, 0.0] 
+
         self.req.waypoints = waypoints
-        future = self.cli.call_async(self.req)
-        rclpy.spin_until_future_complete(self, future)
-        if future.result() is not None:
-            print("Service call successful:", future.result().success)
+        self.future = self.cli.call_async(self.req)
+        rclpy.spin_until_future_complete(self, self.future)
+        self.get_logger().info(f"Service complete")
+
+        if self.future.result() is not None:
+            self.get_logger().info(f"Service responded: success = {self.future.result().success}")
         else:
-            print("Service call failed.")
-        return future.result()
+            self.get_logger().error("Service call failed")
+        return self.future.result()
    
 def main(args=None):
     rclpy.init(args=args)

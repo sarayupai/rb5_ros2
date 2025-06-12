@@ -141,23 +141,10 @@ class NavigationService(Node):
         self.pid = PIDcontroller(0.1, 0.005, 0.005)
 
     def navigate_callback(self, request, response):
-        #self.get_logger().info('Incoming request:\n' (request.waypoints))
+        #self.get_logger().info('Incoming request:\n', request.waypoints)
         waypoints = np.array([tuple(request.waypoints[i:i+3]) for i in range (0, len(request.waypoints), 3)])
-
-        # Path TODO update 
-        #waypoints = np.array([
-        #    (2.0, 3.0, 1.5707963267948966),
-        #    (1.5, 3.5, 2.356194490192345),
-        #    (1.5, 4.5, 1.5707963267948966),
-        #    (2.0, 5.0, 0.7853981633974483),
-        #    (2.0, 5.5, 1.5707963267948966),
-        #    (2.5, 6.0, 0.7853981633974483),
-        #    (3.0, 6.0, 0.0),
-        #    (4.0, 6.0, 0.0),
-        #    (6.0, 6.0, 0.0)
-        #])
-        #waypoints_to_meters(waypoints)
         print(waypoints)
+
         self.get_logger().info(f"Received {len(waypoints)} waypoints:")
         for wp in waypoints:
             self.get_logger().info(f"x: {wp[0]}, y: {wp[1]}, theta: {wp[2]}")
@@ -186,7 +173,6 @@ class NavigationService(Node):
             found_state, estimated_state = self.robot_state_estimator.pose_updated, self.robot_state_estimator.current_state
             if found_state: # if the tag is detected, we can use it to update current state.
                 current_state = estimated_state
-            print('here_b')
 
             # state_feet = state_to_feet_list(current_state)
             trajectory.append(current_state)
@@ -225,6 +211,7 @@ class NavigationService(Node):
             wr = csv.writer(f)
             wr.writerows(trajectory)
 
+        self.get_logger().info(f"Arrived at goal")
         self.robot_state_estimator.destroy_node()
         response.success = True
         return response 

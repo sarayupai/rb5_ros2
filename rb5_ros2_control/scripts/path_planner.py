@@ -2,17 +2,18 @@
 import math
 import heapq
 
-# Sample graph (actual graph imported from main)
+# Sample graph (actual graph imported from main) 
 GRAPH = {
-    "A": {"pos": (0, 0), "neighbors": ["B", "E"]},
-    "B": {"pos": (2, 0), "neighbors": ["A", "C"]},
-    "C": {"pos": (4, 0), "neighbors": ["B", "D", "F"]},
-    "D": {"pos": (6, 0), "neighbors": ["C"]},
-    "E": {"pos": (1, 2), "neighbors": ["A", "F"]},
-    "F": {"pos": (5, 2), "neighbors": ["E", "C", "G"]},
-    "G": {"pos": (7, 1), "neighbors": ["F", "D"]},
+    "A": {"pos": (0.0, 0.0), "neighbors": ["B", "D"]},
+    "B": {"pos": (0.0, 0.01), "neighbors": ["A", "C"]},
+    "C": {"pos": (0.0, 0.02), "neighbors": ["B", "F"]},
+    "D": {"pos": (0.03, 0.0), "neighbors": ["A", "G"]},
+    #"E": {"pos": (0.03, 0.01), "neighbors": ["C"]},
+    "F": {"pos": (0.03, 0.02), "neighbors": ["C", "I"]},
+    "G": {"pos": (0.06, 0.0), "neighbors": ["D", "H"]},
+    "H": {"pos": (0.06, 0.01), "neighbors": ["G", "I"]},
+    "I": {"pos": (0.06, 0.02), "neighbors": ["F", "H"]},
 }
-
 
 # Note: positions are x, y (no angle information)
 # Note: assumes paths exists (ie no error handling for unreachable/undefined nodes)
@@ -54,12 +55,12 @@ class PathPlanner():
             # Found the goal
             if current == goal:
                 # Reconstruct path 
-                path = [self.map[current]["pos"][0], self.map[current]["pos"][1], 0]
+                path = [0.0, self.map[current]["pos"][1], self.map[current]["pos"][0]]
                 while current in came_from:
                     current = came_from[current]
-                    path.append(self.map[current]["pos"][0])
+                    path.append(0.0)
                     path.append(self.map[current]["pos"][1])
-                    path.append(0)
+                    path.append(self.map[current]["pos"][0])
                 return path[::-1] # Return reversed path
             
             for neighbor in self.map[current]["neighbors"]:
@@ -103,7 +104,6 @@ class PathPlanner():
         x2, y2 = p2
         return math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
     
-planner = PathPlanner(GRAPH)
-path = planner.get_path('D', (-1, -1)) 
-print(path)    
+#planner = PathPlanner(GRAPH)
+#path = planner.get_path('I', (0.0, 0.0)) 
 
